@@ -31,7 +31,7 @@
 	v2f vert (appdata_img v) 
 	{
 		v2f o;
-		o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+		o.pos = UnityObjectToClipPos (v.vertex);
 		o.uv.xy = v.texcoord;
 		o.uv1.xy = v.texcoord;
 
