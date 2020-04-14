@@ -309,7 +309,23 @@ ModelImporter:
       might lower retargeting quality:\nNote: Activate translation DOF on avatar to
       improve retargeting quality.\n\t'Character1_Spine' is inbetween humanoid transforms
       and has rotation animation that will be discarded.\n"
-    animationRetargetingWarnings: 
+    animationRetargetingWarnings: "\nRetargeting quality report for clip 'Take 001':\n\tLeftLowerLeg
+      average position error 2.5 mm and maximum position error 18.9 mm at time 131:12
+      (54.6%) Frame 3942\n\tLeftFoot average position error 0.1 mm and maximum position
+      error 1.0 mm at time 211:13 (87.8%) Frame 6343\n\tRightLowerLeg average position
+      error 1.1 mm and maximum position error 14.2 mm at time 146:13 (60.8%) Frame
+      4393\n\tRightFoot average position error 0.1 mm and maximum position error 1.0
+      mm at time 108:22 (45.2%) Frame 3262\n\tLeftUpperArm average position error
+      7.4 mm and maximum position error 18.9 mm at time 223:19 (92.9%) Frame 6709\n\tLeftLowerArm
+      average position error 4.7 mm and maximum position error 16.6 mm at time 20:29
+      (8.7%) Frame 629\n\tLeftHand average position error 3.0 mm and maximum position
+      error 17.3 mm at time 20:12 (8.5%) Frame 612\n\tRightUpperArm average position
+      error 7.4 mm and maximum position error 18.9 mm at time 223:19 (92.9%) Frame
+      6709\n\tRightLowerArm average position error 5.3 mm and maximum position error
+      17.1 mm at time 20:13 (8.5%) Frame 613\n\tRightHand average position error 3.4
+      mm and maximum position error 15.1 mm at time 223:19 (92.9%) Frame 6709\n\tHead
+      average position error 7.4 mm and maximum position error 18.9 mm at time 223:19
+      (92.9%) Frame 6709\n"
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
     importConstraints: 0
