@@ -24,6 +24,7 @@ public class WaitingRoom : MonoBehaviour
         // Instantiate the character.
         go = (GameObject)Instantiate(characterPrefab);
         animator = go.GetComponent<Animator>();
+        animator.applyRootMotion = false;
     }
 
     IEnumerator Start()
@@ -44,14 +45,12 @@ public class WaitingRoom : MonoBehaviour
     void Update()
     {
         start |= Input.GetButtonDown("Jump") | Input.GetMouseButtonDown(0);
-        
+
         if (start)
         {
             // White out.
             overlayIntensity = Mathf.Min(1.0f, overlayIntensity + Time.deltaTime / fadeTime);
-//            if (overlayIntensity == 1.0f) Application.LoadLevel(1);
-            if (overlayIntensity == 1.0f) SceneManager.LoadScene(1);
-
+            if (overlayIntensity <= 1.0f) SceneManager.LoadScene(1);
         }
         else
         {
