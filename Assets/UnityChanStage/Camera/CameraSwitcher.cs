@@ -3,6 +3,7 @@ using System.Collections;
 
 public class CameraSwitcher : MonoBehaviour
 {
+    public bool isFixed = false;
     public string targetName;
     public Transform[] points;
     public float interval = 2.0f;
@@ -36,12 +37,15 @@ public class CameraSwitcher : MonoBehaviour
         followPoint = Vector3.Lerp(target.position, followPoint, param);
 
         // Look at the follow point.
-        transform.LookAt(followPoint);
+        if (!isFixed)
+            transform.LookAt(followPoint);
     }
 
     // Change the camera position.
     public void ChangePosition(Transform destination, bool forceStable = false)
     {
+        if (isFixed) return;
+
         // Do nothing if disabled.
         if (!enabled) return;
 
