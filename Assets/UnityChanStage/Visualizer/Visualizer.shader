@@ -133,7 +133,8 @@
 
 		void surf (Input IN, inout SurfaceOutput o)
 		{
-			float2 coord = (IN.screenPos.xy / IN.screenPos.w);
+			int i;
+			float2 coord = (IN.screenPos.xy / max(IN.screenPos.w, 1e-6));
 
 			float3 center = IN.worldPos - _Center;
 			float trails = Rings(center);
@@ -164,7 +165,7 @@
 			};
 			float depth = 1.0;
 			depth = tex2D(_ReflectionDepthTex, coord).r;
-			for(int i=1; i<9; ++i) {
+			for(i=1; i<9; ++i) {
 				depth = min(depth, tex2D(_ReflectionDepthTex, coord+blur_coords[i]).r);
 			}
 
@@ -178,7 +179,7 @@
 
 			float g = saturate((grid_d+0.02)*50.0);
 			coord += n.xz * (g>0.0 && g<1.0 ? 1.0 : 0.0) * 0.02;
-			for(int i=0; i<9; ++i) {
+			for(i=0; i<9; ++i) {
 				refcolor += tex2D(_ReflectionTex, coord+blur_coords[i]*((1.0-fade_by_depth)*0.75+0.25)).rgb * 0.1111;
 				//refcolor += tex2D(_ReflectionTex, coord+blur_coords[i]).rgb * 0.1111;
 			}

@@ -25,6 +25,7 @@ namespace Kino.PostProcessing.Utilities
             _dof = ScriptableObject.CreateInstance<DepthOfField>();
             _dof.hideFlags = HideFlags.DontSave;
             _dof.focusDistance.overrideState = true;
+            _dof.focalLength.overrideState = true;
             _dof.enabled.value = true;
 
             _profile = ScriptableObject.CreateInstance<PostProcessProfile>();
@@ -50,8 +51,8 @@ namespace Kino.PostProcessing.Utilities
         {
             if (_camera == null || _target == null) return;
 
-            _dof.focusDistance.value =
-                (_camera.transform.position - _target.position).magnitude + _offset;
+            _dof.focusDistance.value = (_camera.transform.position - _target.position).magnitude + _offset;
+            _dof.focalLength.value = _camera.focalLength;
         }
 
         static void DestroyAsset(Object o)
