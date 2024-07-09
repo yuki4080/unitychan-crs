@@ -49,11 +49,11 @@ public enum MidiChannel
 public class MidiJack : MonoBehaviour
 {
     #region Public interface
-    
+
     // Returns the key state (on: velocity, off: zero).
-    public static float GetKey (MidiChannel channel, int noteNumber)
+    public static float GetKey(MidiChannel channel, int noteNumber)
     {
-        var v = instance.channelArray [(int)channel].noteArray [noteNumber];
+        var v = instance.channelArray[(int)channel].noteArray[noteNumber];
         if (v > 1.0f)
         {
             return v - 1.0f;
@@ -67,67 +67,67 @@ public class MidiJack : MonoBehaviour
             return 0.0f;
         }
     }
-    
-    public static float GetKey (int noteNumber)
+
+    public static float GetKey(int noteNumber)
     {
-        return GetKey (MidiChannel.All, noteNumber);
+        return GetKey(MidiChannel.All, noteNumber);
     }
-    
+
     // Returns true if the key was pressed down in the current frame.
-    public static bool GetKeyDown (MidiChannel channel, int noteNumber)
+    public static bool GetKeyDown(MidiChannel channel, int noteNumber)
     {
-        return instance.channelArray [(int)channel].noteArray [noteNumber] > 1.0f;
+        return instance.channelArray[(int)channel].noteArray[noteNumber] > 1.0f;
     }
-    
-    public static bool GetKeyDown (int noteNumber)
+
+    public static bool GetKeyDown(int noteNumber)
     {
-        return GetKeyDown (MidiChannel.All, noteNumber);
+        return GetKeyDown(MidiChannel.All, noteNumber);
     }
-    
+
     // Returns true if the key was released in the current frame.
-    public static bool GetKeyUp (MidiChannel channel, int noteNumber)
+    public static bool GetKeyUp(MidiChannel channel, int noteNumber)
     {
-        return instance.channelArray [(int)channel].noteArray [noteNumber] < 0.0f;
+        return instance.channelArray[(int)channel].noteArray[noteNumber] < 0.0f;
     }
-    
-    public static bool GetKeyUp (int noteNumber)
+
+    public static bool GetKeyUp(int noteNumber)
     {
-        return GetKeyUp (MidiChannel.All, noteNumber);
+        return GetKeyUp(MidiChannel.All, noteNumber);
     }
-    
+
     // Provides the CC (knob) list.
-    public static int[] GetKnobNumbers (MidiChannel channel)
+    public static int[] GetKnobNumbers(MidiChannel channel)
     {
-        var cs = instance.channelArray [(int)channel];
+        var cs = instance.channelArray[(int)channel];
         var numbers = new int[cs.knobMap.Count];
-        cs.knobMap.Keys.CopyTo (numbers, 0);
+        cs.knobMap.Keys.CopyTo(numbers, 0);
         return numbers;
     }
-    
-    public static int[] GetKnobNumbers ()
+
+    public static int[] GetKnobNumbers()
     {
-        return GetKnobNumbers (MidiChannel.All);
+        return GetKnobNumbers(MidiChannel.All);
     }
-    
+
     // Get the CC (knob) value.
-    public static float GetKnob (MidiChannel channel, int knobNumber, float defaultValue = 0.0f)
+    public static float GetKnob(MidiChannel channel, int knobNumber, float defaultValue = 0.0f)
     {
-        var cs = instance.channelArray [(int)channel];
-        if (cs.knobMap.ContainsKey (knobNumber))
+        var cs = instance.channelArray[(int)channel];
+        if (cs.knobMap.ContainsKey(knobNumber))
         {
-            return cs.knobMap [knobNumber];
+            return cs.knobMap[knobNumber];
         }
         else
         {
             return defaultValue;
         }
     }
-    
-    public static float GetKnob (int knobNumber, float defaultValue = 0.0f)
+
+    public static float GetKnob(int knobNumber, float defaultValue = 0.0f)
     {
-        return GetKnob (MidiChannel.All, knobNumber, defaultValue);
+        return GetKnob(MidiChannel.All, knobNumber, defaultValue);
     }
-    
+
     #endregion
 
     #region Internal data structure
@@ -137,25 +137,25 @@ public class MidiJack : MonoBehaviour
     {
         // MIDI source (endpoint) ID.
         public uint source;
-        
+
         // MIDI status byte.
         public byte status;
-        
+
         // MIDI data bytes.
         public byte data1;
         public byte data2;
-        
-        public MidiMessage (ulong data)
+
+        public MidiMessage(ulong data)
         {
             source = (uint)(data & 0xffffffffUL);
             status = (byte)((data >> 32) & 0xff);
             data1 = (byte)((data >> 40) & 0xff);
             data2 = (byte)((data >> 48) & 0xff);
         }
-        
-        public override string ToString ()
+
+        public override string ToString()
         {
-            return string.Format ("s({0:X2}) d({1:X2},{2:X2}) from {3:X8}", status, data1, data2, source);
+            return string.Format("s({0:X2}) d({1:X2},{2:X2}) from {3:X8}", status, data1, data2, source);
         }
     }
 
@@ -168,17 +168,17 @@ public class MidiJack : MonoBehaviour
         // 0<X<=1 : On. X represents velocity.
         // 1<X<=2 : Triggered on this frame. (X-1) represents velocity.
         public float[] noteArray;
-        
+
         // Knob number to knob mapping.
         public Dictionary<int, float> knobMap;
-        
-        public ChannelState ()
+
+        public ChannelState()
         {
             noteArray = new float[128];
-            knobMap = new Dictionary<int, float> ();
+            knobMap = new Dictionary<int, float>();
         }
     }
-    
+
     // Channel state array.
     ChannelState[] channelArray;
 
@@ -186,47 +186,48 @@ public class MidiJack : MonoBehaviour
 
     #region Editor supports
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     // Incoming message history.
     Queue<MidiMessage> messageHistory;
-    public Queue<MidiMessage> History {
+    public Queue<MidiMessage> History
+    {
         get { return messageHistory; }
     }
-    #endif
+#endif
 
     #endregion
 
     #region Monobehaviour functions
 
-    void Awake ()
+    void Awake()
     {
         channelArray = new ChannelState[17];
         for (var i = 0; i < 17; i++)
         {
-            channelArray [i] = new ChannelState ();
+            channelArray[i] = new ChannelState();
         }
-        #if UNITY_EDITOR
-        messageHistory = new Queue<MidiMessage> ();
-        #endif
+#if UNITY_EDITOR
+        messageHistory = new Queue<MidiMessage>();
+#endif
     }
 
-    void Update ()
+    void Update()
     {
         // Update the note state array.
         foreach (var cs in channelArray)
         {
             for (var i = 0; i < 128; i++)
             {
-                var x = cs.noteArray [i];
+                var x = cs.noteArray[i];
                 if (x > 1.0f)
                 {
                     // Key down -> Hold.
-                    cs.noteArray [i] = x - 1.0f;
+                    cs.noteArray[i] = x - 1.0f;
                 }
                 else if (x < 0)
                 {
                     // Key up -> Off.
-                    cs.noteArray [i] = 0.0f;
+                    cs.noteArray[i] = 0.0f;
                 }
             }
         }
@@ -235,57 +236,58 @@ public class MidiJack : MonoBehaviour
         while (true)
         {
             // Pop from the queue.
-            var data = DequeueIncomingData ();
+            var data = DequeueIncomingData();
             if (data == 0)
             {
                 break;
             }
 
             // Parse the message.
-            var message = new MidiMessage (data);
+            var message = new MidiMessage(data);
 
             // Split the first byte.
             var statusCode = message.status >> 4;
             var channelNumber = message.status & 0xf;
-            
+
             // Note on message?
             if (statusCode == 9)
             {
                 var velocity = 1.0f / 127 * message.data2 + 1.0f;
-                channelArray [channelNumber].noteArray [message.data1] = velocity;
-                channelArray [(int)MidiChannel.All].noteArray [message.data1] = velocity;
+                channelArray[channelNumber].noteArray[message.data1] = velocity;
+                channelArray[(int)MidiChannel.All].noteArray[message.data1] = velocity;
             }
-            
+
             // Note off message?
             if (statusCode == 8 || (statusCode == 9 && message.data2 == 0))
             {
-                channelArray [channelNumber].noteArray [message.data1] = -1.0f;
-                channelArray [(int)MidiChannel.All].noteArray [message.data1] = -1.0f;
+                channelArray[channelNumber].noteArray[message.data1] = -1.0f;
+                channelArray[(int)MidiChannel.All].noteArray[message.data1] = -1.0f;
             }
-            
+
             // CC message?
             if (statusCode == 0xb)
             {
                 // Normalize the value.
                 var value = 1.0f / 127 * message.data2;
                 // Update the channel if it already exists, or add a new channel.
-                channelArray [channelNumber].knobMap [message.data1] = value;
+                channelArray[channelNumber].knobMap[message.data1] = value;
                 // Do again for All-ch.
-                channelArray [(int)MidiChannel.All].knobMap [message.data1] = value;
+                channelArray[(int)MidiChannel.All].knobMap[message.data1] = value;
             }
 
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             // Record the message history.
-            messageHistory.Enqueue (message);
-            #endif
+            messageHistory.Enqueue(message);
+#endif
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         // Truncate the history.
-        while (messageHistory.Count > 8) {
-            messageHistory.Dequeue ();
+        while (messageHistory.Count > 8)
+        {
+            messageHistory.Dequeue();
         }
-        #endif
+#endif
     }
 
     #endregion
@@ -314,27 +316,27 @@ public class MidiJack : MonoBehaviour
 
 #else
 
-    public static int CountEndpoints ()
+    public static int CountEndpoints()
     {
         return 0;
     }
 
-    public static uint GetEndpointIdAtIndex (int index)
+    public static uint GetEndpointIdAtIndex(int index)
     {
         return 0;
     }
 
-    public static ulong DequeueIncomingData ()
+    public static ulong DequeueIncomingData()
     {
         return 0;
     }
 
-    private static System.IntPtr MidiJackGetEndpointName (uint id)
+    private static System.IntPtr MidiJackGetEndpointName(uint id)
     {
         return System.IntPtr.Zero;
     }
 
-    public static string GetEndpointName (uint id)
+    public static string GetEndpointName(uint id)
     {
         return null;
     }
@@ -344,29 +346,31 @@ public class MidiJack : MonoBehaviour
     #endregion
 
     #region Singleton class handling
-    
+
     static MidiJack _instance;
-    
-    public static MidiJack instance {
-        get {
+
+    public static MidiJack instance
+    {
+        get
+        {
             if (_instance == null)
             {
-                var previous = FindObjectOfType (typeof(MidiJack));
+                var previous = FindFirstObjectByType(typeof(MidiJack));
                 if (previous)
                 {
-                    Debug.LogWarning ("Initialized twice. Don't use MidiInput in the scene hierarchy.");
+                    Debug.LogWarning("Initialized twice. Don't use MidiInput in the scene hierarchy.");
                     _instance = (MidiJack)previous;
                 }
                 else
                 {
-                    var go = new GameObject ("MidiJack");
-                    _instance = go.AddComponent<MidiJack> ();
-                    DontDestroyOnLoad (go);
+                    var go = new GameObject("MidiJack");
+                    _instance = go.AddComponent<MidiJack>();
+                    DontDestroyOnLoad(go);
                 }
             }
             return _instance;
         }
     }
-    
+
     #endregion
 }

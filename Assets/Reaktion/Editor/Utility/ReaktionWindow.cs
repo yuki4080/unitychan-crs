@@ -23,133 +23,134 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace Reaktion {
-
-public class ReaktionWindow : EditorWindow
+namespace Reaktion
 {
-    const int updateInterval = 15;
-    int updateCounter;
 
-    Reaktor[] cachedReaktors;
-    int activeReaktorCount;
-
-    Vector2 scrollPosition;
-
-    [MenuItem ("Window/Reaktion")]
-    static void Init ()
+    public class ReaktionWindow : EditorWindow
     {
-        EditorWindow.GetWindow<ReaktionWindow> ("Reaktion");
-    }
+        const int updateInterval = 15;
+        int updateCounter;
 
-    void OnEnable ()
-    {
-        //EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
-        EditorApplication.playModeStateChanged += OnPlaymodeStateChanged;
-    }
+        Reaktor[] cachedReaktors;
+        int activeReaktorCount;
 
-    //public void OnPlaymodeStateChanged ()
-    public void OnPlaymodeStateChanged (PlayModeStateChange state)
-    {
-        autoRepaintOnSceneChange = !EditorApplication.isPlaying;
-        Repaint ();
-    }
+        Vector2 scrollPosition;
 
-    void Update ()
-    {
-        if (EditorApplication.isPlaying)
+        [MenuItem("Window/Reaktion")]
+        static void Init()
         {
-            if (++updateCounter >= updateInterval)
-            {
-                Repaint ();
-                updateCounter = 0;
-            }
-        }
-    }
-
-    static int CompareReaktor (Reaktor a, Reaktor b)
-    {
-        return a.name.CompareTo(b.name);
-    }
-
-    void FindAndCacheReaktors ()
-    {
-        // Cache validity check.
-        if (EditorApplication.isPlaying && cachedReaktors != null &&
-            activeReaktorCount == Reaktor.ActiveInstanceCount)
-        {
-            bool validity = true;
-            foreach (var r in cachedReaktors) validity &= (r!= null);
-            // No update if the cache is valid.
-            if (validity) return;
+            EditorWindow.GetWindow<ReaktionWindow>("Reaktion");
         }
 
-        // Update the cache.
-        cachedReaktors = FindObjectsOfType<Reaktor> ();
-        System.Array.Sort (cachedReaktors, CompareReaktor);
-        activeReaktorCount = Reaktor.ActiveInstanceCount;
-    }
-
-    void OnGUI ()
-    {
-        FindAndCacheReaktors();
-
-        scrollPosition = EditorGUILayout.BeginScrollView (scrollPosition);
-
-        GUILayout.Label ("Reaktor List", EditorStyles.boldLabel);
-
-        foreach (var reaktor in cachedReaktors)
+        void OnEnable()
         {
-            EditorGUILayout.BeginHorizontal ();
+            //EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
+            EditorApplication.playModeStateChanged += OnPlaymodeStateChanged;
+        }
 
-            // Slider
+        //public void OnPlaymodeStateChanged ()
+        public void OnPlaymodeStateChanged(PlayModeStateChange state)
+        {
+            autoRepaintOnSceneChange = !EditorApplication.isPlaying;
+            Repaint();
+        }
+
+        void Update()
+        {
             if (EditorApplication.isPlaying)
             {
-                if (reaktor.IsOverridden)
+                if (++updateCounter >= updateInterval)
                 {
-                    // Already overridden: show the override value.
-                    var value = EditorGUILayout.Slider (reaktor.name, reaktor.Override, 0, 1);
-                    if (!reaktor.Bang) reaktor.Override = value;
+                    Repaint();
+                    updateCounter = 0;
+                }
+            }
+        }
+
+        static int CompareReaktor(Reaktor a, Reaktor b)
+        {
+            return a.name.CompareTo(b.name);
+        }
+
+        void FindAndCacheReaktors()
+        {
+            // Cache validity check.
+            if (EditorApplication.isPlaying && cachedReaktors != null &&
+                activeReaktorCount == Reaktor.ActiveInstanceCount)
+            {
+                bool validity = true;
+                foreach (var r in cachedReaktors) validity &= (r != null);
+                // No update if the cache is valid.
+                if (validity) return;
+            }
+
+            // Update the cache.
+            cachedReaktors = FindObjectsByType<Reaktor>(FindObjectsSortMode.InstanceID);
+            System.Array.Sort(cachedReaktors, CompareReaktor);
+            activeReaktorCount = Reaktor.ActiveInstanceCount;
+        }
+
+        void OnGUI()
+        {
+            FindAndCacheReaktors();
+
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+
+            GUILayout.Label("Reaktor List", EditorStyles.boldLabel);
+
+            foreach (var reaktor in cachedReaktors)
+            {
+                EditorGUILayout.BeginHorizontal();
+
+                // Slider
+                if (EditorApplication.isPlaying)
+                {
+                    if (reaktor.IsOverridden)
+                    {
+                        // Already overridden: show the override value.
+                        var value = EditorGUILayout.Slider(reaktor.name, reaktor.Override, 0, 1);
+                        if (!reaktor.Bang) reaktor.Override = value;
+                    }
+                    else
+                    {
+                        // Not overridden: show the output value and begin override when touched.
+                        var value = EditorGUILayout.Slider(reaktor.name, reaktor.Output, 0, 1);
+                        if (value != reaktor.Output) reaktor.Override = value;
+                    }
                 }
                 else
                 {
-                    // Not overridden: show the output value and begin override when touched.
-                    var value = EditorGUILayout.Slider (reaktor.name, reaktor.Output, 0, 1);
-                    if (value != reaktor.Output) reaktor.Override = value;
+                    // Not playing: show a dummy slider.
+                    EditorGUILayout.Slider(reaktor.name, 0, 0, 1);
                 }
-            }
-            else
-            {
-                // Not playing: show a dummy slider.
-                EditorGUILayout.Slider (reaktor.name, 0, 0, 1);
+
+                // Bang button
+                if (GUILayout.RepeatButton("!", EditorStyles.miniButtonLeft, GUILayout.Width(18)))
+                {
+                    reaktor.Bang = true;
+                }
+                else if (reaktor.Bang && Event.current.type == EventType.Repaint)
+                {
+                    reaktor.Override = 0;
+                }
+
+                // Release/Select button
+                if (reaktor.IsOverridden)
+                {
+                    if (GUILayout.Button("Release", EditorStyles.miniButtonRight, GUILayout.Width(46)))
+                        reaktor.StopOverride();
+                }
+                else
+                {
+                    if (GUILayout.Button("Select", EditorStyles.miniButtonRight, GUILayout.Width(46)))
+                        Selection.activeGameObject = reaktor.gameObject;
+                }
+
+                EditorGUILayout.EndHorizontal();
             }
 
-            // Bang button
-            if (GUILayout.RepeatButton ("!", EditorStyles.miniButtonLeft, GUILayout.Width (18)))
-            {
-                reaktor.Bang = true;
-            }
-            else if (reaktor.Bang && Event.current.type == EventType.Repaint)
-            {
-                reaktor.Override = 0;
-            }
-
-            // Release/Select button
-            if (reaktor.IsOverridden)
-            {
-                if (GUILayout.Button ("Release", EditorStyles.miniButtonRight, GUILayout.Width (46)))
-                    reaktor.StopOverride();
-            }
-            else
-            {
-                if (GUILayout.Button ("Select", EditorStyles.miniButtonRight, GUILayout.Width (46)))
-                    Selection.activeGameObject = reaktor.gameObject;
-            }
-
-            EditorGUILayout.EndHorizontal ();
+            EditorGUILayout.EndScrollView();
         }
-
-        EditorGUILayout.EndScrollView ();
     }
-}
 
 } // namespace Reaktion
